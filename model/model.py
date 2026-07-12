@@ -41,3 +41,7 @@ model.add(layers.Conv1D(filters=FILTERS_2, kernel_size=SQUEEZE_KERNEL, activatio
 model.add(layers.Flatten())
 
 model.add(layers.Dense(DICT_SIZE, activation="softmax"))
+
+optimizer = keras.optimizers.RMSprop(learning_rate=0.001)
+
+model.compile(loss="sparse_categorical_crossentropy", optimizer=optimizer)
