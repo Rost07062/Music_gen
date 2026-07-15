@@ -26,6 +26,9 @@ class ReferencesIterator:
             return None
         return line[len(f'{tag}: '):].strip()
     
+    def __iter__(self):
+        return self
+    
     def __next__(self):
         title = self.__read_tag('title')
         url   = self.__read_tag('url')
@@ -100,13 +103,14 @@ def main():
     with open(RAW_TXT_PATH, mode='r', encoding='utf-8') as f:
         metadata = Metadata(METADATA_PATH)
 
-        for item in ReferencesIterator(f):
-            url = item["url"]
-            filepath, downloaded = download_file(url, RAW_AUDIO_DIR, item["title"])
-            if filepath:
-                metadata.add(filepath, item)
-        
-        metadata.save()
+        try:
+            for item in ReferencesIterator(f):
+                url = item["url"]
+                filepath, downloaded = download_file(url, RAW_AUDIO_DIR, item["title"])
+                if filepath:
+                    metadata.add(filepath, item)
+        finally:
+            metadata.save()
 
 if __name__ == "__main__":
     main()
