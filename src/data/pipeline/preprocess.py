@@ -3,9 +3,9 @@ import json
 import torch
 import torchaudio
 import torchaudio.transforms as T
+from metadata import Metadata
 
 PROCESSED_DIR = "data/processed"
-METADATA_PATH = "data/dataset/metadata.json"
 TARGET_SAMPLE_RATE = 16000
 
 def preprocess_audio(file_path, target_sr=TARGET_SAMPLE_RATE):
@@ -25,17 +25,16 @@ def preprocess_audio(file_path, target_sr=TARGET_SAMPLE_RATE):
 
 def main():
     os.makedirs(PROCESSED_DIR, exist_ok=True)
-
-    if not os.path.exists(METADATA_PATH):
-        print("Сначала запустите скачивание файлов (download.py)")
+    
+    metadata = Metadata()
+    
+    if not metadata.metadata:
+        print("Метадата пуста. Сначала запустите download.py")
         return
-        
-    with open(METADATA_PATH, 'r', encoding='utf-8') as f:
-        metadata = json.load(f)
-        
-    for filename, info in metadata.items():
-        raw_path = info["raw_path"]
-        if not os.path.exists(raw_path):
+
+    for filename, info in metadata.metadata.items():
+        raw_path = info.get("raw_path")
+        if not raw_path or not os.path.exists(raw_path):
             continue
             
         print(f"Предобработка: {filename}")
@@ -46,10 +45,11 @@ def main():
         
         torchaudio.save(processed_path, processed_waveform, TARGET_SAMPLE_RATE)
         
-        metadata[filename]["processed_path"] = processed_path
+        metadata.update(filename, {
+            "processed_path": processed_path
+        })
 
-    with open(METADATA_PATH, 'w', encoding='utf-8') as f:
-        json.dump(metadata, f, ensure_ascii=False, indent=4)
+    metadata.save()
 
 if __name__ == "__main__":
     main()

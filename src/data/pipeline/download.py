@@ -5,10 +5,10 @@ import logging
 import json
 import io
 import os
+from metadata import Metadata
 
 RAW_TXT_PATH = "data/raw/references.txt"
 RAW_AUDIO_DIR = "data/raw/audio"
-METADATA_PATH = "data/dataset/metadata.json"
 
 class ReferencesIterator:
     def __init__(self, file: io.TextIOWrapper):
@@ -67,34 +67,6 @@ def download_file(url: str, dest_dir: str, title: str) -> tuple[Optional[str], b
     except Exception as e:
         logging.error(f"Ошибка при скачивании {url}: {e}")
         return None, False
-
-class Metadata:
-    def __load(self):
-        if os.path.exists(self.file_path):
-            try:
-                with open(self.file_path, 'r', encoding='utf-8') as f:
-                    self.metadata = json.load(f)
-            except json.JSONDecodeError:
-                pass
-
-    def __init__(self, file_path):
-        self.metadata = {}
-        self.file_path = file_path
-
-        self.__load()
-    
-    def add(self, filepath: str, item: dict):
-        filename = os.path.basename(filepath)
-
-        self.metadata[filename] = {
-            "title": item["title"],
-            "tags": item["tags"],
-            "raw_path": filepath
-        }
-    
-    def save(self):
-        with open(self.file_path, 'w', encoding='utf-8') as f:
-            json.dump(self.metadata, f, ensure_ascii=False, indent=4)
 
 def main():
     os.makedirs(RAW_AUDIO_DIR, exist_ok=True)
